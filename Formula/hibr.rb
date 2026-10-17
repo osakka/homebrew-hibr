@@ -5,9 +5,9 @@
 class Hibr < Formula
   desc "Small, fast bash-flavoured shell with nested maps, JSON, and native networking"
   homepage "https://github.com/osakka/hibr"
-  url "https://github.com/osakka/hibr/archive/refs/tags/v0.99.230.tar.gz"
-  version "0.99.230"
-  sha256 "91322e96ebf32216ab721c4f874a7242381c467d2c5349824e5003e501129486"
+  url "https://github.com/osakka/hibr/archive/refs/tags/v0.99.232.tar.gz"
+  version "0.99.232"
+  sha256 "9b199607ce799047d29144c97f80e1c61f0fc5d1d1a54445bae4fe93f3fd256d"
   license "MIT"
   head "https://github.com/osakka/hibr.git", branch: "main"
 
@@ -24,9 +24,18 @@ class Hibr < Formula
     depends_on "openssl@3"
   end
 
+  # The system scope -- what `catalogue --system` installs for every user
+  # of the machine -- lives in Homebrew's own var/, which outlives an
+  # upgrade. Derived from `prefix` it would be inside this version's keg,
+  # and `brew upgrade` plus `brew cleanup` would delete everything placed
+  # there (Gitea #268). The same SYSDIR goes to both steps, since it is
+  # compiled into the shell and a different one forces a rebuild; and
+  # MKSYSDIR=no leaves the folder to the catalogue, which makes it on first
+  # use, so the install writes nothing outside the keg.
   def install
-    system "make", "PREFIX=#{prefix}"
-    system "make", "install", "PREFIX=#{prefix}"
+    sysdir = var/"lib/hibr"
+    system "make", "PREFIX=#{prefix}", "SYSDIR=#{sysdir}"
+    system "make", "install", "PREFIX=#{prefix}", "SYSDIR=#{sysdir}", "MKSYSDIR=no"
   end
 
   # Homebrew formulas do not write into a user's home directory -- not a
